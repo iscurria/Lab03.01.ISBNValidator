@@ -1,0 +1,124 @@
+//import java.io.PrintWriter;
+//import java.util.ArrayList;
+import java.util.Scanner;
+import java.io.File;
+
+/**
+ * @author 24scurria
+ * @version 1/18/22
+ * opens a data file using a
+ * Scanner object and verifies the data, sorting items into one of two
+ * standard arrays. Following the input data from the file, the program
+ * will then prompt the user if they want to view the valid ISBN number list
+ * or the invalid ISBN number list.
+ */
+
+public class ISBNValidator {
+    private String filename;
+    private String[] validNums; // initialize to hold 1000 items
+    private String[] invalidNums; // initialize to hold 1000 items
+
+    /**
+     * simple constructor; initializes arrays
+     */
+    public ISBNValidator() {
+        filename = "isbn_files/isbn1.dat";
+        int lines = 0;
+        try {
+            Scanner in = new Scanner(new File(filename));
+            while(in.hasNext()) {
+                lines++;
+                in.nextLine();
+            }
+            in.close();
+        }
+        catch(Exception e)  {
+            System.out.println(e.toString());
+        }
+        validNums = new String[lines];
+        invalidNums = new String[lines];
+    }
+
+    /**
+     * imports .dat file, calls isValidISBN method and stores Strings into corresponding arrays
+     */
+
+    public void importData() {
+        try {
+            Scanner in = new Scanner(new File(filename));
+            int validCount = 0, invalidCount = 0;
+            while(in.hasNext()) {
+                String isbn = in.nextLine().trim().strip();
+                if(isValidISBN(isbn))
+                    validNums[validCount++] = isbn;
+                else
+                    invalidNums[invalidCount++] = isbn;
+            }
+            in.close();
+        }
+        catch(Exception e)  {
+            System.out.println(e.toString());
+        }
+    }
+
+    /**
+     * determines validity of supplied ISBN number; called inside importData
+     * @param isbn An ISBN number to test
+     * @return true if valid, false otherwise
+     */
+    public boolean isValidISBN(String isbn) {
+        int total = 0;
+        isbn = isbn.replaceAll("-", "");
+        for (int i = 0; i < isbn.length(); i++) {
+            if(i % 2 == 0)
+                total += Integer.parseInt(isbn.substring(i, i+1));
+            else
+                total += Integer.parseInt(isbn.substring(i, i+1))*3;
+
+        }
+        return(isbn.substring(0,3).equals("978") || isbn.substring(0,3).equals("979")) && (total % 10 == 0);
+    }
+
+    /**
+    output the user-picked ISBN list or quit the application
+     */
+    public void runProgram() {
+        Scanner userin = new Scanner(System.in);
+        while (true) {
+            System.out.println("All ISBN data has been imported and validated. Would you like to: ");
+            System.out.println("1) View all valid ISBN numbers");
+            System.out.println("2) View all invalid ISBN numbers");
+            System.out.println("3) Quit");
+            System.out.println("Your selection: ");
+            String userpick = userin.nextLine();
+            if(userpick.equals("3"))
+                break;
+            else if(userpick.equals("1")) {
+                for(int i = 0; i < validNums.length && validNums[i] != null; i++)
+                    System.out.println(validNums[i]);
+            }
+            else if (userpick.equals("2")) {
+                for(int i = 0; i < invalidNums.length && invalidNums[i] != null; i++)
+                    System.out.println(invalidNums[i]);
+            }
+            else {
+                System.out.println("Invalid selection, try again");
+            }
+        }
+
+    }
+
+    /**
+     * main method for ISBN validator
+     * @param args command-line arguments if needed
+     */
+    public static void main(String[] args){
+        ISBNValidator app = new ISBNValidator();
+        System.out.println("* ISBN Validator Program *");
+        System.out.println("...Importing data...");
+        app.importData(); // imports data from the text file
+        app.runProgram(); // runs using a while loop; see examples
+        System.out.println("* End of Program *");
+    }
+
+}
